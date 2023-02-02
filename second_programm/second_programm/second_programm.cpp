@@ -8,6 +8,7 @@
 #include <sys/socket.h>
 #include <netinet/in.h>
 #include <arpa/inet.h>
+#include <unistd.h>
 #endif
 
 #pragma warning(disable: 4996)
@@ -41,37 +42,39 @@ int main(int argc, char* args[])
     int sizeofaddress = sizeof(address);
     address.sin_port = htons(18666);
     address.sin_family = AF_INET;
+
+    std::cout << "Ожидает соединения...\n";
 #ifdef _WIN32
-    SOCKET connection = socket(AF_INET, SOCK_STREAM, NULL);
-    if (connect(connection, (SOCKADDR*)&address, sizeof(address)) != 0) {
-        std::cout << "Ожидает соединения...\n";
+    SOCKET sock = socket(AF_INET, SOCK_STREAM, NULL);
+    if (connect(sock, (SOCKADDR*)&address, sizeof(address)) != 0) {
+        std::cout << "Соединение отсутствует\n";
     }
     else  std::cout << "Соединение установлено\n";
 #else
-    int connection = socket(AF_INET, SOCK_STREAM, NULL);
-    std::cout << connection;
-    int a = connect(connection, (struct sockaddr*)&address, sizeof(address));
-    if (a != 0) {
-        std::cout << "Ожидает соединения...\n";
-    }
-    else  std::cout << "СоединеНие установлено\n" << a << "h";
+    int sock = socket(AF_INET, SOCK_STREAM, 0);
+    int connection = connect(sock, (struct sockaddr*)&address, sizeof(address));
+    if (connection >= 0)
+        std::cout << "Соединение установлено\n";
 #endif // _WIN32
     int value;
     while (true) {
-        if (recv(connection, (char*)&value, sizeof(int), NULL) == 4) {
+        if (recv(sock, (char*)&value, sizeof(int), 0) == 4) {
             if (checkValue(std::to_string(value))) std::cout << value << "\n";
             else std::cerr << "Число должно быть кратно 32 или должно состоять из более чем 2-х символов\n";
         }
         else {
-            connection = socket(AF_INET, SOCK_STREAM, NULL);
+
 #ifdef _WIN32
-            if (connect(connection, (SOCKADDR*)&address, sizeof(address)) == 0)
+            sock = socket(AF_INET, SOCK_STREAM, 0);
+            if (connect(sock, (SOCKADDR*)&address, sizeof(address)) == 0)
 #else
-            if (connect(connection, (struct sockaddr*)&address, sizeof(address)) == 0)
+            close(sock);
+            sock = socket(AF_INET, SOCK_STREAM, 0);
+            connection = connect(sock, (struct sockaddr*)&address, sizeof(address));
+            if (connection >= 0)
 #endif
                 std::cout << "Соединение установлено\n";
         }
     }
-    std::cout << "ok";
     return 0;
 }

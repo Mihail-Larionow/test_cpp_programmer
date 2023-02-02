@@ -93,10 +93,10 @@ void SecondThread() {
     SOCKET sListen = socket(AF_INET, SOCK_STREAM, NULL);
     bind(sListen, (SOCKADDR*)&address, sizeof(address));
 #else
-    int sListen = socket(AF_INET, SOCK_STREAM, NULL);
+    int sListen = socket(AF_INET, SOCK_STREAM, 0);
     bind(sListen, (struct sockaddr*)&address, sizeof(address));
 #endif
-    listen(sListen, 1);
+    listen(sListen, SOMAXCONN);
 
     std::cout << "Поток " << std::this_thread::get_id() << ": Ожидает соединения...\n";
 #ifdef _WIN32
@@ -104,7 +104,7 @@ void SecondThread() {
 #else
     int connection = accept(sListen, NULL, NULL);
 #endif
-    if (connection == errno) {
+    if (connection < 0) {
         std::cerr << "Поток " << std::this_thread::get_id() << ": Отсутствует соединение\n";
     }
     else  std::cout << "Поток " << std::this_thread::get_id() << ": Соединение установлено\n";
@@ -119,16 +119,17 @@ void SecondThread() {
 #ifdef _WIN32
         if (send(connection, (char*)&summary, sizeof(int), NULL) == SOCKET_ERROR) {
 #else
-        if (send(connection, (char*)&summary, sizeof(int), NULL) == errno) {
+        if (send(connection, (char*)&summary, sizeof(int), MSG_NOSIGNAL) != 4) {
 #endif
             std::cerr << "Поток " << std::this_thread::get_id() << ": Отсутствует соединение\n";
 #ifdef _WIN32
             connection = accept(sListen, (SOCKADDR*)&address, &sizeofaddress);
+            if (connection == 0) std::cout << "Поток " << std::this_thread::get_id() << ": Соединение установлено\n";
 #else
-            connection = accept(sListen, (struct sockaddr*)&address, NULL);
+            connection = accept(sListen, NULL, NULL);
+            if (connection >= 0) std::cout << "Поток " << std::this_thread::get_id() << ": Соединение установлено\n";
 #endif // _WIN32
-            send(connection, (char*)&summary, sizeof(int), NULL);
-            if (connection != 0) std::cout << "Поток " << std::this_thread::get_id() << ": Соединение установлено\n";
+            send(connection, (char*)&summary, sizeof(int), 0);
         }
         std::cout << "Поток " << std::this_thread::get_id() << ": " << data << "\n";
         }
