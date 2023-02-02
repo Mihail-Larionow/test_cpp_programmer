@@ -10,9 +10,9 @@
 #ifdef _WIN32
 #include <WinSock2.h>
 #else
-#include <sys/socket.h>
-#include <netinet/in.h>
 #include <arpa/inet.h>
+#include <netinet/in.h>
+#include <sys/socket.h>
 #endif
 
 #pragma warning(disable: 4996)
@@ -84,7 +84,7 @@ void SecondThread() {
     SOCKADDR_IN address;
 #else
     struct sockaddr_in address;
-#endif // _WIN32
+#endif
     address.sin_addr.s_addr = inet_addr("127.0.0.1");
     int sizeofaddress = sizeof(address);
     address.sin_port = htons(18666);
@@ -128,7 +128,7 @@ void SecondThread() {
 #else
             connection = accept(sListen, NULL, NULL);
             if (connection >= 0) std::cout << "Поток " << std::this_thread::get_id() << ": Соединение установлено\n";
-#endif // _WIN32
+#endif
             send(connection, (char*)&summary, sizeof(int), 0);
         }
         std::cout << "Поток " << std::this_thread::get_id() << ": " << data << "\n";

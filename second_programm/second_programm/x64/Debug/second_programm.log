@@ -1,3 +1,3 @@
 ﻿  second_programm.cpp
-C:\Users\mihai\source\repos\Mihail-Larionow\test_cpp_programmer\second_programm\second_programm\second_programm.cpp(31,9): warning C4551: в вызове функции отсутствует список аргументов
+C:\Users\mihai\source\repos\Mihail-Larionow\test_cpp_programmer\second_programm\second_programm\second_programm.cpp(32,9): warning C4551: в вызове функции отсутствует список аргументов
   second_programm.vcxproj -> C:\Users\mihai\source\repos\Mihail-Larionow\test_cpp_programmer\second_programm\x64\Debug\second_programm.exe
